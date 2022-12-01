@@ -143,7 +143,7 @@ class Capture:
                 frame, acc = func(self._frames[i][0], self._frames[i][1], acc)
             else:
                 frame = func(self._frames[i][0], self._frames[i][1])
-            assert frame.shape == (shape if shape is not None else (self._H, self._W, self._C))
+            assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C))
             self._frames[i] = (self._frames[i][0], frame)
         if shape is not None:
             self._W, self._H, self._C = shape
@@ -167,7 +167,7 @@ class Capture:
                 frame, acc = func(self._frames[i][0], q, acc)
             else:
                 frame = func(self._frames[i][0], q)
-            assert frame.shape == (shape if shape is not None else (self._H, self._W, self._C))
+            assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C))
             self._frames[i] = (self._frames[i][0], frame)
             q.pop(0)
         tmp = self._frames[half_window:-half_window]
@@ -384,7 +384,7 @@ class LazyCapture:
                         frame, _acc = func(i, frame, _acc)
                     else:
                         frame = func(i, frame)
-                    assert frame.shape == (shape if shape is not None else (_H, _W, _C))
+                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
                     yield i, frame
                     j = j + (-1 if reverse else 1)
             def _diff():
@@ -412,7 +412,7 @@ class LazyCapture:
                         frame, _ = func(i, frame, accs[k])
                     else:
                         frame = func(i, frame)
-                    assert frame.shape == (shape if shape is not None else (_H, _W, _C))
+                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
                     yield i, frame
                     k = k - 1
                     j = j + (-1 if reverse else 1)
@@ -446,7 +446,7 @@ class LazyCapture:
                         frame, _acc = func(i, q, _acc)
                     else:
                         frame = func(i, q)
-                    assert frame.shape == (shape if shape is not None else (_H, _W, _C))
+                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
                     yield i, frame
                     q.pop(0)
                     j = j + (-1 if reverse else 1)
@@ -479,7 +479,7 @@ class LazyCapture:
                         frame, _ = func(i, q, accs[k])
                     else:
                         frame = func(i, q)
-                    assert frame.shape == (shape if shape is not None else (_H, _W, _C))
+                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
                     yield i, frame
                     q.pop(0)
                     k = k - 1
