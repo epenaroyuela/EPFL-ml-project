@@ -45,12 +45,12 @@ class Capture:
 
     @classmethod
     def concat(cls, captures):
-        assert captures
+        assert captures, "captures is empty"
         length, W, H, C = captures[0]._length, captures[0]._W, captures[0]._H, captures[0]._C
         frames = captures[0]._length
         max_index = captures[0]._frames[-1][0] if captures[0]._length else 0
         for capture in captures[1:]:
-            assert capture._W == W and capture._H == H and capture._C == C
+            assert capture._W == W and capture._H == H and capture._C == C, "({}, {}, {}) != ({}, {}, {})".format(capture._W, capture._H, capture._C, W, H, C)
             frames.extend([(i + max_index, frame) for i, frame in capture._frames])
             length = length + capture._length
             max_index = max_index + capture._frames[-1][0] if capture._length else 0
@@ -62,7 +62,7 @@ class Capture:
 
     def write(self, path, fps=50, reverse=False):
         if self._length:
-            assert self._C == 3
+            assert self._C == 3, "C != 3"
             out = cv2.VideoWriter(path, cv2.VideoWriter_fourcc('M','J','P','G'), fps, (self._W, self._H))
             for _, frame in (reversed(self._frames) if reverse else self._frames):
                 out.write(frame)
@@ -84,10 +84,10 @@ class Capture:
     def frame(self, frame_no, index=True):
         if index:
             frames_dict = dict(self._frames)
-            assert frame_no in frames_dict
+            assert frame_no in frames_dict, "{} not in frames".format(frame_no)
             return frames_dict[frame_no]
         else:
-            assert frame_no >= 0 and frame_no < self._length
+            assert frame_no >= 0 and frame_no < self._length, "{} out of range [{}, {}]".format(frame_no, 0, self._length)
             return self._frames[frame_no]
 
     def frames_dict(self):
@@ -118,7 +118,7 @@ class Capture:
 
     def foreach(self, func, zip=None, acc=None, reverse=False):
         z, a = zip is not None, acc is not None
-        assert not z or len(zip) == self._length
+        assert not z or len(zip) == self._length, "len(zip) {} != {}".format(len(zip), self._length)
         r = range(self._length)
         for i in reversed(r) if reverse else r:
             if z and a:
@@ -132,7 +132,8 @@ class Capture:
 
     def apply(self, func, zip=None, acc=None, reverse=False, shape=None):
         z, a = zip is not None, acc is not None
-        assert not z or len(zip) == self._length
+        assert not z or len(zip) == self._length, "len(zip) {} != {}".format(len(zip), self._length)
+        _shape = (shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C)
         r = range(self._length)
         for i in reversed(r) if reverse else r:
             if z and a:
@@ -143,16 +144,17 @@ class Capture:
                 frame, acc = func(self._frames[i][0], self._frames[i][1], acc)
             else:
                 frame = func(self._frames[i][0], self._frames[i][1])
-            assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C))
+            assert frame.shape == _shape, "{} != {}".format(frame.shape, _shape)
             self._frames[i] = (self._frames[i][0], frame)
         if shape is not None:
-            self._W, self._H, self._C = shape
+            self._W, self._H, self._C = _shape[1], _shape[0], _shape[2]
 
     def rolling(self, func, window,  zip=None, acc=None, reverse=False, shape=None): # allow selecting position within window, allow lossless (fill ends with copies of end item), even window
-        assert window % 2 == 1
-        assert self._length >= window
+        assert window % 2 == 1, "window is not even"
+        assert self._length >= window, "windos is too large, {} > {}".format(window, self._length)
         z, a = zip is not None, acc is not None
-        assert not z or len(zip) == self._length
+        assert not z or len(zip) == self._length, "len(zip) {} != {}".format(len(zip), self._length)
+        _shape = (shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C)
         half_window = window // 2
         q, lq = (reversed(self._frames[-window+1:]), self._length - window) if reverse else (self._frames[:window-1], window - 1)
         r = range(half_window, self._length - half_window)
@@ -167,14 +169,14 @@ class Capture:
                 frame, acc = func(self._frames[i][0], q, acc)
             else:
                 frame = func(self._frames[i][0], q)
-            assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C))
+            assert frame.shape == _shape, "{} != {}".format(frame.shape, _shape)
             self._frames[i] = (self._frames[i][0], frame)
             q.pop(0)
         tmp = self._frames[half_window:-half_window]
         self._length = self._length - 2 * half_window
         self._frames = tmp
         if shape is not None:
-            self._W, self._H, self._C = shape
+            self._W, self._H, self._C = _shape[1], _shape[0], _shape[2]
 
     # Destructor
     def __del__(self):
@@ -232,10 +234,10 @@ class LazyCapture:
 
     @classmethod
     def concat(cls, captures):
-        assert captures
+        assert captures, "captures is empty"
         length, W, H, C = captures[0]._length, captures[0]._W, captures[0]._H, captures[0]._C
         for capture in captures:
-            assert capture._W == W and capture._H == H and capture._C == C
+            assert capture._W == W and capture._H == H and capture._C == C, "({}, {}, {}) != ({}, {}, {})".format(capture._W, capture._H, capture._C, W, H, C)
             length = length + capture._length
         def frames(reverse=False):
             def _ahead():
@@ -267,7 +269,7 @@ class LazyCapture:
 
     def write(self, path, fps=50, reverse=False):
         if self._length:
-            assert self._C == 3
+            assert self._C == 3, "C != 3"
             out = cv2.VideoWriter(path, cv2.VideoWriter_fourcc('M','J','P','G'), fps, (self._W, self._H))
             for _, frame in self._frames(reverse=reverse):
                 out.write(frame)
@@ -291,9 +293,9 @@ class LazyCapture:
             for i, frame in self._frames(reverse=False):
                 if i == frame_no:
                     return frame
-            assert False
+            assert False, "{} not in frames".format(frame_no)
         else:
-            assert frame_no >= 0 and frame_no < self._length
+            assert frame_no >= 0 and frame_no < self._length, "{} out of range [{}, {}]".format(frame_no, 0, self._length)
             it = self._frames(reverse=False)
             _skip(it, frame_no)
             return next(it)
@@ -306,8 +308,7 @@ class LazyCapture:
                 for i, frame in self._frames(reverse=False):
                     if i == index:
                         return frame
-                assert False
-            
+                raise KeyError
         return LazyDict(self._frames)
 
     # Index
@@ -332,7 +333,7 @@ class LazyCapture:
 
     # Iterators
     def frames(self, reverse=False):
-        return iter(self._frames(reverse=reverse))
+        return self._frames(reverse=reverse)
 
     # Operations
     def filter(self, func):
@@ -352,7 +353,7 @@ class LazyCapture:
 
     def foreach(self, func, zip=None, acc=None, reverse=False):
         z, a = zip is not None, acc is not None
-        assert not z or len(zip) == self._length
+        assert not z or len(zip) == self._length, "len(zip) {} != {}".format(len(zip), self._length)
         j = (self._length - 1 if reverse else 0)
         for i, frame in self._frames(reverse=reverse):
             if z and a:
@@ -368,9 +369,9 @@ class LazyCapture:
     def apply(self, func, zip=None, acc=None, reverse=False, shape=None):
         apply_reverse = reverse
         z, a = zip is not None, acc is not None
-        assert not z or len(zip) == self._length
-        _frames = self._frames
-        _length, _W, _H, _C = self._length, self._W, self._H, self._C
+        assert not z or len(zip) == self._length, "len(zip) {} != {}".format(len(zip), self._length)
+        _shape = (shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C)
+        _frames, _length = self._frames, self._length
         def frames(reverse=False):
             def _same():
                 _acc = acc
@@ -384,13 +385,12 @@ class LazyCapture:
                         frame, _acc = func(i, frame, _acc)
                     else:
                         frame = func(i, frame)
-                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
+                    assert frame.shape == _shape, "{} != {}".format(frame.shape, _shape)
                     yield i, frame
                     j = j + (-1 if reverse else 1)
             def _diff():
                 _acc = acc
                 if a:
-                    print("A")
                     accs = []
                     j = (_length - 1 if reverse else 0)
                     for i, frame in _frames(reverse=apply_reverse):
@@ -403,7 +403,6 @@ class LazyCapture:
                 k = _length - 1
                 j = (_length - 1 if reverse else 0)
                 for i, frame in _frames(reverse=reverse):
-                    print("B " + str(i))
                     if z and a:
                         frame, _ = func(i, frame, zip[j], accs[k])
                     elif z and not a:
@@ -412,23 +411,23 @@ class LazyCapture:
                         frame, _ = func(i, frame, accs[k])
                     else:
                         frame = func(i, frame)
-                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
+                    assert frame.shape == _shape, "{} != {}".format(frame.shape, _shape)
                     yield i, frame
                     k = k - 1
                     j = j + (-1 if reverse else 1)
             return _diff() if apply_reverse != reverse else _same()
         self._frames = frames
         if shape is not None:
-            self._W, self._H, self._C = shape
+            self._W, self._H, self._C = _shape[1], _shape[0], _shape[2]
 
     def rolling(self, func, window,  zip=None, acc=None, reverse=False, shape=None): # allow selecting position within window, allow lossless (fill ends with copies of end item), even window
         rolling_reverse = reverse
-        assert window % 2 == 1
-        assert self._length >= window
+        assert window % 2 == 1, "window is not even"
+        assert self._length >= window, "windos is too large, {} > {}".format(window, self._length)
         z, a = zip is not None, acc is not None
-        assert not z or len(zip) == self._length
-        _frames = self._frames
-        _length, _W, _H, _C = self._length, self._W, self._H, self._C
+        assert not z or len(zip) == self._length, "len(zip) {} != {}".format(len(zip), self._length)
+        _shape = (shape[1], shape[0], shape[2]) if shape is not None else (self._H, self._W, self._C)
+        _frames, _length = self._frames, self._length
         half_window = window // 2
         def frames(reverse=False):
             def _same():
@@ -446,7 +445,7 @@ class LazyCapture:
                         frame, _acc = func(i, q, _acc)
                     else:
                         frame = func(i, q)
-                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
+                    assert frame.shape == _shape, "{} != {}".format(frame.shape, _shape)
                     yield i, frame
                     q.pop(0)
                     j = j + (-1 if reverse else 1)
@@ -479,7 +478,7 @@ class LazyCapture:
                         frame, _ = func(i, q, accs[k])
                     else:
                         frame = func(i, q)
-                    assert frame.shape == ((shape[1], shape[0], shape[2]) if shape is not None else (_H, _W, _C))
+                    assert frame.shape == _shape, "{} != {}".format(frame.shape, _shape)
                     yield i, frame
                     q.pop(0)
                     k = k - 1
@@ -488,7 +487,7 @@ class LazyCapture:
         self._length = self._length - 2 * half_window
         self._frames = frames
         if shape is not None:
-            self._W, self._H, self._C = shape
+            self._W, self._H, self._C = _shape[1], _shape[0], _shape[2]
 
     def __del__(self):
         self._frames = None
