@@ -1,3 +1,5 @@
+import numpy as np
+
 # get labels from .txt file
 # input: path of the file
 # output: dictionary where key = slice number, value = true (i, j) coordinates of the worm
@@ -15,3 +17,12 @@ def load_labels(path):
         slice = int(fields[7])
         ret[slice] = (true_i, true_j)
     return ret
+
+def l2arr(label):
+    return np.array(label, dtype=np.float32)
+
+def l2i(label):
+    return (int(label[0]), int(label[1]))
+
+def larr2i(label):
+    return label.astype(np.int32)
