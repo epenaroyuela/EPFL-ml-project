@@ -68,6 +68,9 @@ class Capture:
                 out.write(frame)
             out.release()
 
+    def __str__(self):
+        return "Capture[length = {}; shape = {}]".format(self._length, (self._W, self._H, self._C))
+
     # Getters
     def length(self):
         return self._length
@@ -236,7 +239,7 @@ class LazyCapture:
     def concat(cls, captures):
         assert captures, "captures is empty"
         length, W, H, C = captures[0]._length, captures[0]._W, captures[0]._H, captures[0]._C
-        for capture in captures:
+        for capture in captures[1:]:
             assert capture._W == W and capture._H == H and capture._C == C, "({}, {}, {}) != ({}, {}, {})".format(capture._W, capture._H, capture._C, W, H, C)
             length = length + capture._length
         def frames(reverse=False):
@@ -274,6 +277,9 @@ class LazyCapture:
             for _, frame in self._frames(reverse=reverse):
                 out.write(frame)
             out.release()
+
+    def __str__(self):
+        return "LazyCapture[length = {}; shape = {}]".format(self._length, (self._W, self._H, self._C))
 
     # Getters
     def length(self):
