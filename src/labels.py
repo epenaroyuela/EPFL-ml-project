@@ -12,8 +12,8 @@ def load_labels(path):
         fields = line.split()
         if i == 0 or fields[7] == slice:
             continue
-        true_i = float(fields[6])
-        true_j = float(fields[5])
+        true_i = float(fields[5])
+        true_j = float(fields[6])
         slice = int(fields[7])
         ret[slice] = (true_i, true_j)
     return ret

@@ -13,25 +13,25 @@ def h_mirror_label(i, label, size):
     return (label[0], size[1] - label[1])
 
 def rotate_90(i, frame):
-    return np.rot90(frame, 1, axes=(0, 1))
+    return np.rot90(frame, 1, axes=(1, 0))
 
 def rotate_90_label(i, label, size):
     vec = (label[0] - size[0] / 2.0, label[1] - size[1] / 2.0)
-    level = (-1.0 * vec[1], vec[0])
+    level = (-1.0 * vec[0], vec[1])
     return (int(level[0] + size[0] / 2.0), int(level[1] + size[1] / 2.0))
 
 def rotate_180(i, frame):
-    return np.rot90(frame, 2, axes=(0, 1))
+    return np.rot90(frame, 2, axes=(1, 0))
 
 def rotate_180_label(i, label, size):
     vec = (label[0] - size[0] / 2.0, label[1] - size[1] / 2.0)
-    level = (-1.0 * vec[1], -1.0 * vec[0])
+    level = (-1.0 * vec[0], -1.0 * vec[1])
     return (int(level[0] + size[0] / 2.0), int(level[1] + size[1] / 2.0))
 
 def rotate_270(i, frame):
-    return np.rot90(frame, 3, axes=(0, 1))
+    return np.rot90(frame, 3, axes=(1, 0))
 
 def rotate_270_label(i, label, size):
     vec = (label[0] - size[0] / 2.0, label[1] - size[1] / 2.0)
-    level = (vec[1], -1.0 * vec[0])
+    level = (vec[0], -1.0 * vec[1])
     return (int(level[0] + size[0] / 2.0), int(level[1] + size[1] / 2.0))

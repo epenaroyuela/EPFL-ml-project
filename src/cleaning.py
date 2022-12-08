@@ -6,6 +6,18 @@ def select_channel(channel):
         return frame
     return _inner
 
+def plicate_channel(channels):
+    def _inner(i, frame):
+        frame = np.concatenate((frame, frame, frame), axis=2)
+        return frame
+    return _inner
+
+def cast(type):
+    def _inner(i, frame):
+        frame = frame.astype(type)
+        return frame
+    return _inner
+
 # sets to 0 the borders of a one channel frame. 
 # The width of the border is specified by n_pixels
 def remove_borders(pixels, hard=False):

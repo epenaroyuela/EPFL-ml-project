@@ -14,10 +14,10 @@ def print_frame(single_channel=False):
         if positions:
             true_pos, estimated_pos = positions
             if true_pos is not None:
-                t1, t2 = true_pos[0], true_pos[1]
+                t2, t1 = true_pos[0], true_pos[1]
                 frame[t1-2:t1+2, t2-2:t2+2] = np.array([0, 255, 0], dtype=np.uint8)
             if estimated_pos is not None:
-                e1, e2 = estimated_pos[0], estimated_pos[1]
+                e2, e1 = estimated_pos[0], estimated_pos[1]
                 frame[e1-2:e1+2, e2-2:e2+2] = np.array([255, 0, 0], dtype=np.uint8)
 
         plt.title(str(i))

@@ -268,7 +268,7 @@ class LazyCapture:
 
     # Misc
     def clone(self):
-        return Capture(self._length, self._W, self._H, self._C, self._frames)
+        return LazyCapture(self._length, self._W, self._H, self._C, self._frames)
 
     def write(self, path, fps=50, reverse=False):
         if self._length:
@@ -438,10 +438,10 @@ class LazyCapture:
         def frames(reverse=False):
             def _same():
                 _acc = acc
-                q, it = _take(_frames(reverse=reverse), window - 1)
+                it, q = _take(_frames(reverse=reverse), window - 1)
                 j = (_length - half_window if reverse else half_window)
                 for i, frame in it:
-                    q.append(frame)
+                    q.append((i, frame))
                     j = j + (-1 if reverse else 1)
                     if z and a:
                         frame, _acc = func(i, q, zip[j], _acc)
@@ -459,10 +459,10 @@ class LazyCapture:
                 _acc = acc
                 if a:
                     accs = []
-                    q, it = _take(_frames(reverse=rolling_reverse), window - 1)
+                    it, q = _take(_frames(reverse=rolling_reverse), window - 1)
                     j = (_length - half_window if reverse else half_window)
                     for i, frame in it:
-                        q.append(frame)
+                        q.append((i, frame))
                         j = j + (-1 if reverse else 1)
                         if z:
                             _, _acc = func(i, q, zip[j], _acc)
@@ -471,11 +471,11 @@ class LazyCapture:
                         accs.append(_acc)
                         q.pop(0)
                         j = j + (-1 if reverse else 1)
-                q, it = _take(_frames(reverse=reverse), window - 1)
+                it, q = _take(_frames(reverse=reverse), window - 1)
                 k = _length - 2 * half_window - 1
                 j = (_length - 1 if reverse else 0)
                 for i, frame in _frames(reverse=reverse):
-                    q.append(frame)
+                    q.append((i, frame))
                     if z and a:
                         frame, _ = func(i, q, zip[j], accs[k])
                     elif z and not a:
