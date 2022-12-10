@@ -1,5 +1,6 @@
 import copy
 import itertools as it
+import numpy as np
 import cv2
 
 def _take(it, n):
@@ -104,11 +105,11 @@ class Capture:
         self._frames = list(enumerate([frame for _, frame in self._frames]))
 
     # Iterators
-    def frames(self, reverse=False):
+    def frames(self, limit=None, reverse=False):
         if reverse:
-            return iter(reversed(self._frames))
+            return iter(reversed(self._frames[:limit] if limit is not None else self._frames))
         else:
-            return iter(self._frames)
+            return iter(self._frames[:limit] if limit is not None else self._frames)
 
     # Operations
     def filter(self, func):
@@ -236,6 +237,37 @@ class LazyCapture:
         return cls(length, W, H, C, frames)
 
     @classmethod
+    def random_load(cls, path):
+        length, W, H, C = None, None, None, None
+        cap = cv2.VideoCapture(path)
+        ret, _ = cap.read()
+        if not ret:
+            cap.release()
+            raise Exception("Couldn't read video file: " + path)
+        else:
+            length, W, H, C = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), 3
+        cap.release()
+        
+        perm = list(np.random.permutation(np.arange(length)))
+        def frames(reverse=False):
+            def _ahead():
+                cap = cv2.VideoCapture(path)
+                for frame_no in perm:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+                    _, frame = cap.read()
+                    yield frame_no, frame
+                cap.release()
+            def _reverse():
+                cap = cv2.VideoCapture(path)
+                for frame_no in reversed(perm):
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+                    _, frame = cap.read()
+                    yield frame_no, frame
+                cap.release()
+            return _reverse() if reverse else _ahead()
+        return LazyCapture(length, W, H, C, frames)
+
+    @classmethod
     def concat(cls, captures):
         assert captures, "captures is empty"
         length, W, H, C = captures[0]._length, captures[0]._W, captures[0]._H, captures[0]._C
@@ -338,8 +370,8 @@ class LazyCapture:
         self._frames = frames
 
     # Iterators
-    def frames(self, reverse=False):
-        return self._frames(reverse=reverse)
+    def frames(self, limit=None, reverse=False):
+        return it.islice(self._frames(reverse=reverse), limit) if limit is not None else self._frames(reverse=reverse)
 
     # Operations
     def filter(self, func):
