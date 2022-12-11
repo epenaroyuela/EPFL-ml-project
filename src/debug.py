@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 def print_frame(single_channel=False):
     def _inner(i, frame, positions):
@@ -25,3 +26,10 @@ def print_frame(single_channel=False):
         plt.show()
     return _inner
 
+def carrousel(frames):
+    for i, frame in frames:
+        cv2.putText(frame, str(i), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (100, 255, 0), 3, cv2.LINE_AA)
+        cv2.imshow("Frame", frame)
+        if cv2.waitKey() & 0xFF == ord('q'):                                 # Break while loop if video ends
+            break
+    cv2.destroyAllWindows()

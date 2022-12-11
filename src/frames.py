@@ -1,5 +1,6 @@
 import numpy as np
 
+# Channels
 def select_channel(channel):
     def _inner(i, frame):
         frame = frame[:,:,channel:channel+1]
@@ -12,12 +13,14 @@ def plicate_channel(channels):
         return frame
     return _inner
 
+# Types
 def cast(type):
     def _inner(i, frame):
         frame = frame.astype(type)
         return frame
     return _inner
 
+# Cuts
 # sets to 0 the borders of a one channel frame. 
 # The width of the border is specified by n_pixels
 def remove_borders(pixels, hard=False):
@@ -43,3 +46,20 @@ def remove_outside_petri(center, radius, hard=False):
             frame = frame[t:b, l:r]
         return frame
     return _inner
+
+# Annotate
+def annotate(labels, size=2, color=[255, 0, 0]):
+    def _inner(i, frame):
+        label = labels.get(i, None)
+        if label is not None:
+            y, x = label
+            frame[x-size:x+size, y-size:y+size] = np.array(color, dtype=np.uint8)
+        return frame
+    return _inner
+
+# Rolling
+def average(i, frames):
+    base = frames[0][1].astype(np.uint32)
+    for frame in frames[1:]:
+        base += frame[1]
+    return (base / len(frames)).astype(np.uint8)

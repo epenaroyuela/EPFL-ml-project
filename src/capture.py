@@ -187,8 +187,6 @@ class Capture:
         self._frames = None
 
 
-
-
 class LazyCapture:
     
     # Constructor
@@ -302,11 +300,11 @@ class LazyCapture:
     def clone(self):
         return LazyCapture(self._length, self._W, self._H, self._C, self._frames)
 
-    def write(self, path, fps=50, reverse=False):
+    def write(self, path, fps=50, limit=None, reverse=False):
         if self._length:
             assert self._C == 3, "C != 3"
             out = cv2.VideoWriter(path, cv2.VideoWriter_fourcc('M','J','P','G'), fps, (self._W, self._H))
-            for _, frame in self._frames(reverse=reverse):
+            for _, frame in it.islice(self._frames(reverse=reverse), limit) if limit is not None else self._frames(reverse=reverse):
                 out.write(frame)
             out.release()
 

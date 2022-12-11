@@ -18,6 +18,9 @@ def load_labels(path):
         ret[slice] = (true_i, true_j)
     return ret
 
+def map_labels(labels, func):
+    return {k: func(v) for k, v in labels.items()}
+
 def l2arr(label):
     return np.array(label, dtype=np.float32)
 
