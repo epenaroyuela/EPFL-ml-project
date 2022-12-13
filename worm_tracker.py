@@ -101,11 +101,14 @@ def trackpy_locate(capture, configuration):
     k = 0
     locations_list = []
     for i, frame in capture.frames():
-        tmp_locations = tp.locate(
-            frame[:, :, 0], configuration["diameter"], **locate_options
-        )
-        tmp_locations["frame"] = i
-        locations_list.append(tmp_locations)
+        bright = (np.sum(frame[:, :, 0]) / (capture.W() * capture.H())) > 30
+        if not bright:
+            tmp_locations = tp.locate(
+                frame[:, :, 0], configuration["diameter"], **locate_options
+            )
+            if not tmp_locations.empty:
+                tmp_locations["frame"] = i
+                locations_list.append(tmp_locations)
         if k % 100 == 0:
             print("    Located {}/{} frames".format(k, capture.length()))
         k += 1
