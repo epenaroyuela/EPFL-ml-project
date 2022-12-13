@@ -1,11 +1,10 @@
+"""Compedium of functions to manipulate labels"""
 import numpy as np
 
-# get labels from .txt file
-# input: path of the file
-# output: dictionary where key = slice number, value = true (i, j) coordinates of the worm
-# TODO: why do we keep the first slice value?
+
 def load_labels(path):
-    file = open(path, 'r')
+    """Loads labels from a file into a dictionary"""
+    file = open(path, "r")
     slice = -1
     ret = {}
     for i, line in enumerate(file.readlines()):
@@ -18,14 +17,22 @@ def load_labels(path):
         ret[slice] = (true_i, true_j)
     return ret
 
+
 def map_labels(labels, func):
+    """Maps a dictionary of labels using the given function"""
     return {k: func(v) for k, v in labels.items()}
 
+
 def l2arr(label):
+    """Converts label from tuple to array"""
     return np.array(label, dtype=np.float32)
 
+
 def l2i(label):
+    """Casts tuple label to int"""
     return (int(label[0]), int(label[1]))
 
+
 def larr2i(label):
+    """Casts array label to int"""
     return label.astype(np.int32)
