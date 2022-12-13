@@ -1,5 +1,8 @@
 # Library dependencies.  You need to install them with
 # `pip install -r requirements.txt` before you can run this.
 
+pyyaml
 numpy
+pandas
 opencv-python
+trackpy

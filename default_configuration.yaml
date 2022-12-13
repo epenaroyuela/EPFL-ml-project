@@ -1,0 +1,28 @@
+capture:
+  width: 648
+  height: 686
+
+preprocessing:
+  remove_outside_petri:
+    apply: True
+    center: [324, 343]
+    radius: [304, 323]
+
+background_subtraction:
+  history: 300
+  varTreshold: 32
+  NMixtures: 2
+
+trackpy:
+  locate:
+    minmass: 40
+    separation: 50
+    percentile: 70
+    topn: 5
+    diameter: 9
+  link:
+    search_range: 25
+    memory: 50
+
+find_worm:
+  min_points: 200
