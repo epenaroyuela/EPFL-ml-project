@@ -26,3 +26,7 @@ trackpy:
 
 find_worm:
   min_points: 200
+
+labels:
+  small_radix: 7
+  big_radix: 10

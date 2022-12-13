@@ -14,7 +14,8 @@ import trackpy as tp
 
 from src.capture import LazyCapture
 from src.frames import select_channel, remove_outside_petri, annotate
-from src.labels import map_labels, larr2i
+from src.labels import load_labels, map_labels, larr2i
+from src.evaluation import evaluate, distance, custom_accuracy
 
 
 def parse_args(args):
@@ -24,7 +25,10 @@ def parse_args(args):
         "-I", "--input", help="path of the input capture", required=True
     )
     parser.add_argument(
-        "-O", "--output", help="path of the output labels", required=True
+        "-C", "--configuration", help="path of the custom configuration", required=False
+    )
+    parser.add_argument(
+        "-O", "--output", help="path of the output labels", required=False
     )
     parser.add_argument(
         "-A",
@@ -33,11 +37,17 @@ def parse_args(args):
         required=False,
     )
     parser.add_argument(
-        "-C", "--configuration", help="path of the custom configuration", required=False
+        "-L", "--labels", help="path of the input labels", required=False
     )
 
     results = parser.parse_args(args)
-    return (results.input, results.output, results.annotation, results.configuration)
+    return (
+        results.input,
+        results.configuration,
+        results.output,
+        results.annotation,
+        results.labels,
+    )
 
 
 def preprocess_capture(capture, configuration):
@@ -143,7 +153,13 @@ def compute_labels(worm, capture):
 
 def main():
     """Main function"""
-    arg_input, arg_output, arg_annotation, arg_configuration = parse_args(sys.argv[1:])
+    arg_input, arg_configuration, arg_output, arg_annotation, arg_labels = parse_args(
+        sys.argv[1:]
+    )
+    assert (
+        arg_output is not None or arg_annotation is not None or arg_labels is not None
+    )
+
     print("Worm tracker - Starting...")
     configuration = None
     if arg_configuration is None:
@@ -162,7 +178,7 @@ def main():
         capture.W() == configuration["capture"]["width"]
         and capture.H() == configuration["capture"]["height"]
     )
-    print("> Capture loaded: it has {} frames".format(capture.length()))
+    print("> Capture read: it has {} frames".format(capture.length()))
 
     capture = preprocess_capture(capture, configuration["preprocessing"])
     print("> Capture preprocessed.")
@@ -183,12 +199,13 @@ def main():
     labels = compute_labels(worm, capture)
     print("> Labels computed.")
 
-    with open(arg_output, "w") as file:
-        file.write("frame;x;y\n")
-        file.writelines(
-            ["{};{:.2f};{:.2f}\n".format(f, x, y) for f, (x, y) in labels.items()]
-        )
-    print("> Labels printed out.")
+    if arg_output is not None:
+        with open(arg_output, "w") as file:
+            file.write("frame;x;y\n")
+            file.writelines(
+                ["{};{:.2f};{:.2f}\n".format(f, x, y) for f, (x, y) in labels.items()]
+            )
+        print("+ Labels written.")
 
     if arg_annotation is not None:
         print("+ Starting annotation...")
@@ -197,7 +214,24 @@ def main():
             annotate(map_labels(labels, lambda l: larr2i(l)), color=[0, 255, 0])
         )
         annotation.write(arg_annotation)
-        print("+ Annotation printed out.")
+        print("+ Annotation written.")
+
+    if arg_labels is not None:
+        true_labels = load_labels(arg_labels)
+        eval_distance = evaluate(true_labels, labels, distance())
+        eval_accuracy = evaluate(
+            true_labels,
+            labels,
+            custom_accuracy(
+                configuration["labels"]["small_radix"],
+                configuration["labels"]["big_radix"],
+            ),
+        )
+        print(
+            "EVALUATION: mean manhattan distance [{}], custom accuracy [{}]".format(
+                eval_distance[1], eval_accuracy[1]
+            )
+        )
     print("Finished.")
 
 
