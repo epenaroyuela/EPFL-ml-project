@@ -68,6 +68,7 @@ def background_subtraction(capture, configuration):
 
     def apply_background_subtraction(i, frame, acc):
         frame = acc.apply(frame[:, :, 0])
+        frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, np.ones((11,11), np.uint8))
         frame = cv2.blur(frame, (5, 5))
         return frame[:, :, np.newaxis], acc
 
