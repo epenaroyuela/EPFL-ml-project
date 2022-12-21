@@ -5,16 +5,20 @@ Code for the project work for **CS-433 Machine Learning** at EPFL
 This readme does not provide a detailed description of the functions, for a more in-depth description, please check the comments on the corresponding files.
 
 ## Reproducibility
-To reproduce our results, go through this steps
+To reproduce our results go through this steps
 
-### Acquire the data
+#### Acquire the data
 Download the project data from this link and put it in the **data** folder. https://drive.switch.ch/index.php/s/FUupj8ht776nY3j
 
-### Install the requirements
+#### Install the requirements
 Install the requirements for this project runing ```pip install -r requirements.txt```
 
-### Execution
-Run  ```python3 worm_tracker.py -I capture.avi -O labels.txt -A capture_annotated.avi ```, where the option ```-I capture.avi``` is the input video where the tracking will be carried out, the option ``` -O labels.txt``` is the name of the output labels genereted by the script, and finally, the option ```-A capture_annotated.avi``` generates the video with the annotated pixel that tracks the worm.
+#### Execution
+Run  ```python3 worm_tracker.py -I capture.avi -O labels.txt -A capture_annotated.avi ```, where:
+
+- Option ```-I capture.avi``` is the input video whete the tracking will be carried out
+- Option ``` -O labels.txt``` is the name of the output labels genereted by the script
+- Option ```-A capture_annotated.avi``` generates the video with the annotated pixel that tracks the worm.
 
 ## Project structure
 The structure of this repository is the following:
