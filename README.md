@@ -1,4 +1,4 @@
-# EPFL Machine Learning - Project II: Worm tracking for personality detection
+# EPFL Machine Learning - Worm tracking for personality detection
 Code for the project work for **CS-433 Machine Learning** at EPFL
 ## Authors: Guillem Bartrina Moreno, Aitor Ganuza Izagirre, Eduardo Peña Royuela
 
